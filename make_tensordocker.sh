@@ -6,7 +6,7 @@
 #         (1) CUDA and (2) the NVIDIA runtime library for docker NVIDIA-DOCKER2
 #         need to be installed on the host
 #         see: https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html
-#         to check whether the is an nvidia GPU: 
+#         to check whether there is an nvidia GPU: 
 #         >lspci | grep -i nvidia
 #           0000:73:00.0 VGA compatible controller: NVIDIA Corporation GP102GL [Quadro P6000] (rev a1)
 #           0000:73:00.1 Audio device: NVIDIA Corporation GP102 HDMI Audio Controller (rev a1)
@@ -25,17 +25,48 @@
 #          use sshfs to mount exchange filesystem
 #            sshfs kas2049@hpc007.advcomp.lan:/data /home/acfs/data
 #            sshfs kas2049@hpc007.advcomp.lan: /home/acfs/home
+#
 #          dependencies needed to install devtools ‘usethis’, ‘covr’, ‘httr’, ‘roxygen2’, ‘rversions’ are not available for package ‘devtools"
 #          need to install missing dev libs on Ubuntu: libcurl4-openssl-dev libxml2-dev libssl-dev libgit2-dev
 #          and libgit2-dev needs to be installed separately
-#          to push the docker image to a registry:
+#
+#          to push the docker image to a gitlab registry (obsolete - should use github now):
 #             docker commit ....
 #             docker tag ...
 #             docker login gitlab.com
 #             docker push  ....
 #              credentials: https://ksuhre:4meta-TOOLs@gitlab.com
+#
+#
+#MODIF:   Fri Sep 10 15:56:58 +03 2021
+#         - update versions, try to make it run with github
+#         - get info on latest version of rstudio here: 
+#           https://www.rstudio.com/products/rstudio/download-server/debian-ubuntu/
+#              sudo apt-get install gdebi-core
+#              wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1717-amd64.deb
+#              sudo gdebi rstudio-server-1.4.1717-amd64.deb
+#         - latest bioconductor (May 2021)
+#           http://bioconductor.org/news/bioc_3_13_release/#getting-started-with-bioconductor-313
+#         - latest tensorflow/tensorflow:latest-gpu-jupyter
+#           docker pull tensorflow/tensorflow:latest-gpu-jupyter
+#           docker run --rm  -it tensorflow/tensorflow:latest-gpu-jupyter /bin/bash
+#
+#          - using the github docker registry
+#            https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry
+#              docker login ghcr.io
+#              docker push ghcr.io/karstensuhre/IMAGE_NAME:latest
+#
+#           Mon Nov  8 10:47:22 +03 2021
+#           - go to latest version of BioConductor
+#             BiocManager::install(version = "3.14")
+#             https://www.bioconductor.org/install/
+#           - try versioned tensorflow docker images
+#             https://hub.docker.com/r/tensorflow/tensorflow/
+#             https://hub.docker.com/r/tensorflow/tensorflow/tags/
+#             https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/dockerfiles
+#           - tensorflow/tensorflow:2.4.1-gpu-jupyter 
+#
 #BUGS:    
-#MODIF:   
 
 # if called with option "all", then all scripts are excuted 
 opt=${1}
@@ -51,7 +82,8 @@ if [ "$dummy" = "y" -o "$dummy" = "Y" ]  ; then
 # create the Dockerfile as a here document
 ####################################################################
 cat > tensordocker.dockerfile << 'EOF'
-FROM tensorflow/tensorflow:latest-gpu-jupyter
+FROM tensorflow/tensorflow:2.4.1-gpu-jupyter
+#FROM tensorflow/tensorflow:latest-gpu-jupyter
 #FROM tensorflow/tensorflow:latest-gpu
 LABEL tensordocker.version=1.0
 COPY tensordocker.installscript /
@@ -91,8 +123,11 @@ apt-get install -y r-base r-base-dev
 
 # get rstudio
 # https://rstudio.com/products/rstudio/download-server/debian-ubuntu/
-wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.3.1093-amd64.deb
-gdebi -n rstudio-server-1.3.1093-amd64.deb
+# wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.3.1093-amd64.deb
+# gdebi -n rstudio-server-1.3.1093-amd64.deb
+# update 10 Sep 2021:
+wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1717-amd64.deb
+gdebi rstudio-server-1.4.1717-amd64.deb
 
 # create a user 'rstudio' 
 adduser rstudio <<PWD
@@ -116,11 +151,16 @@ install.packages("keras")
 # install BioConductor
 if (!requireNamespace("BiocManager", quietly = TRUE))
     install.packages("BiocManager")
-BiocManager::install(version = "3.12")
+# BiocManager::install(version = "3.12")
+# update 10 Sep 2021: 
+# BiocManager::install(version = "3.13")
+# update 8 Noc 2021
+BiocManager::install(version = "3.14")
+
 
 # install devtools and remotes (needed to install MetaboTools and autonomics
-BiocManager::install("devtools")
-BiocManager::install("remotes")
+BiocManager::install("devtools", update = FALSE)
+BiocManager::install("remotes", update = FALSE)
 
 EEE
 
@@ -132,7 +172,7 @@ echo '------ tensordocker.installscript created ------'
 # build the docker image
 ####################################################################
 echo '----- building docker image -----'
-  docker container rm -f tensor_beta
+  docker container rm -f tensor_basis
   docker build -t tensordocker -f tensordocker.dockerfile --no-cache . | tee tensordocker.log
   echo "LOG of docker build is in tensordocker.log"
   echo '----------------------------------------'
@@ -170,19 +210,19 @@ fi
 # continue to build the image further
 ####################################################################
 
-echo "Build beta version? [yN]"
+echo "Build version with maplet and autonomics? [yN]"
 if [ "$opt" = "all" ] ; then dummy=y ; else read dummy ; fi
 if [ "$dummy" = "y" -o "$dummy" = "Y" ]  ; then
 
-cat > tensordocker.beta.dockerfile << 'EOF3'
+cat > tensordocker.basis.dockerfile << 'EOF3'
 FROM tensordocker
-LABEL tensordocker.version=1.0beta
-COPY tensordocker.beta.installscript /
-RUN sh /tensordocker.beta.installscript
+LABEL tensordocker.version=1.0basis
+COPY tensordocker.basis.installscript /
+RUN sh /tensordocker.basis.installscript
 EXPOSE 8787
 EOF3
 
-cat > tensordocker.beta.installscript << 'EOF4'
+cat > tensordocker.basis.installscript << 'EOF4'
 #!/bin/bash
 set -x
 echo "running $0"
@@ -193,19 +233,15 @@ R --no-save << 'FFF'
 
 # install MetaboTools
 options(download.file.method='wget')
-devtools::install_gitlab(repo='krumsieklab/mt', subdir = 'MetaboTools', auth_token='d_Sqxk2eoXEatrBq7euB')
 
-# install autonomics
-remotes::install_github('bhagwataditya/autonomics/autonomics.data',       repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.support',    repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.annotate',   repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.import',     repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.preprocess', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.plot',       repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.find',       repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.ora',        repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics.integrate',  repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-remotes::install_github('bhagwataditya/autonomics/autonomics',            repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
+# update to maplet on github https://github.com/krumsieklab/maplet
+# devtools::install_github(repo="krumsieklab/maplet@v1.0.1", subdir="maplet")
+# update 8 Nov 2021
+devtools::install_github(repo="krumsieklab/maplet@v1.1.0", subdir="maplet")
+
+# install autonomics from https://github.com/bhagwataditya/autonomics
+# update 10 Sep 2021
+remotes::install_github('bhagwataditya/autonomics', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
 
 # install additional packages (if they are not already installed)
 pkgs=c(
@@ -240,7 +276,7 @@ print(pkgs)
 if (length(pkgs) > 0) {
   for (pkg in pkgs) {
     if (length(find.package(pkg, quiet = TRUE)) == 0) {
-      cat('instaling', pkg, '\n')
+      cat('installing', pkg, '\n')
       BiocManager::install(pkg, ask=F,update=T, site_repository = getOption('repos'))
     } else { 
       cat('package', pkg, 'is already installed, skipping ...\\n') 
@@ -255,33 +291,33 @@ EOF4
 
 # UNCOMMENT THE BELOW TO RUN kldocker
 # add kldocker dockerfile
-# cat ../kldocker/Dockerfile_bioc | grep -v '^ *FROM' >> tensordocker.beta.dockerfile 
+# cat ../kldocker/Dockerfile_bioc | grep -v '^ *FROM' >> tensordocker.basis.dockerfile 
 # cp ../kldocker/packagelist.txt .
 
-echo '----- building docker image BETA -----'
-docker build -t tensordocker.beta -f tensordocker.beta.dockerfile --no-cache . | tee tensordocker.beta.log
-echo "LOG of docker BETA build is in tensordocker.beta.log"
+echo '----- building docker image basis -----'
+docker build -t tensordocker.basis -f tensordocker.basis.dockerfile --no-cache . | tee tensordocker.basis.log
+echo "LOG of docker basis build is in tensordocker.basis.log"
 echo '----------------------------------------'
 
 fi
 
 
 ####################################################################
-# testing the BETA version
+# testing the basis version
 ####################################################################
-echo "Start the beta version? [yN]"
+echo "Start the basis version? [yN]"
 if [ "$opt" = "all" ] ; then dummy=y ; else read dummy ; fi
 if [ "$dummy" = "y" -o "$dummy" = "Y" ]  ; then
 
-  docker container rm -f tensor_beta
+  docker container rm -f tensor_basis
   docker run --gpus all -v /home/suhre:/home/rstudio/host -v /ssd:/home/rstudio/ssd \
-     -it --detach --name tensor_beta -p8899:8888 -p8877:8787 tensordocker.beta 
-  docker exec -it tensor_beta rstudio-server start
-  echo "to open a root shell use:  docker exec -it tensor_beta /bin/bash"
+     -it --detach --name tensor_basis -p8899:8888 -p8877:8787 tensordocker.basis 
+  docker exec -it tensor_basis rstudio-server start
+  echo "to open a root shell use:  docker exec -it tensor_basis /bin/bash"
   echo "to access the rstudio GUI go to http://207.162.246.62:8877"
   echo "to access the jupyter workbook go to http://207.162.246.62:8899"
   echo "and use the below token to log in"
   sleep 3 # wait for the container to start up
-  docker exec tensor_beta jupyter notebook list
+  docker exec tensor_basis jupyter notebook list
 fi
 
