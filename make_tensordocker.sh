@@ -65,6 +65,11 @@
 #             https://hub.docker.com/r/tensorflow/tensorflow/tags/
 #             https://github.com/tensorflow/tensorflow/tree/master/tensorflow/tools/dockerfiles
 #           - tensorflow/tensorflow:2.4.1-gpu-jupyter 
+#           - rstudio: https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2021.09.0-351-amd64.deb
+#
+#            Tue Nov  9 15:05:21 +03 2021
+#           - add -n option to gdebi command - otherwise it does not install
+#           - sometimes wget fails with "Unable to establish SSL connection" and "'wget' call had nonzero exit status"
 #
 #BUGS:    
 
@@ -126,8 +131,11 @@ apt-get install -y r-base r-base-dev
 # wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.3.1093-amd64.deb
 # gdebi -n rstudio-server-1.3.1093-amd64.deb
 # update 10 Sep 2021:
-wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1717-amd64.deb
-gdebi rstudio-server-1.4.1717-amd64.deb
+# wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1717-amd64.deb
+# gdebi rstudio-server-1.4.1717-amd64.deb
+# update 9 Nov 2021:
+wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2021.09.0-351-amd64.deb
+gdebi -n rstudio-server-2021.09.0-351-amd64.deb
 
 # create a user 'rstudio' 
 adduser rstudio <<PWD
@@ -299,6 +307,12 @@ docker build -t tensordocker.basis -f tensordocker.basis.dockerfile --no-cache .
 echo "LOG of docker basis build is in tensordocker.basis.log"
 echo '----------------------------------------'
 
+fi
+
+# test if wget always worked 
+if [ `grep -c "Unable to establish SSL connection" tensordocker.basis.log` -gt 0 ] ; then 
+  echo "WARNING: not all libraries were installed correctly - wget failed to establish SSL connections"
+  echo "         the image may be incomplete (check tensordocker.basis.log)"
 fi
 
 
