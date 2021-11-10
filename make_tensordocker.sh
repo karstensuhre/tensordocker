@@ -71,6 +71,11 @@
 #           - add -n option to gdebi command - otherwise it does not install
 #           - sometimes wget fails with "Unable to establish SSL connection" and "'wget' call had nonzero exit status"
 #
+#           - to get around timedatectl warning
+#             https://askubuntu.com/questions/1190804/timedatectl-failed-to-create-bus-connection-no-such-file-or-directory
+#             need to add "--privileged -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro" to the docker command
+#             (not done yet)
+#
 #BUGS:    
 
 # if called with option "all", then all scripts are excuted 
