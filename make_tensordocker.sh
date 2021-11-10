@@ -340,3 +340,28 @@ if [ "$dummy" = "y" -o "$dummy" = "Y" ]  ; then
   docker exec tensor_basis jupyter notebook list
 fi
 
+
+cat << EEOOFF1
+
+# things to do now :
+
+# push the image to gitbub
+docker login ghcr.io
+docker tag tensordocker.basis ghcr.io/karstensuhre/tensordocker:1.0
+docker push ghcr.io/karstensuhre/tensordocker:1.0
+
+# start the image
+docker run --gpus all -v \`pwd\`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
+
+# start the rstudio-server within the container
+docker exec -it tensor rstudio-server start
+
+# login to the container
+docker exec -it tensor /bin/bash
+
+# list the jupyter notebook token
+docker exec tensor jupyter notebook list
+
+EEOOFF1
+
+
