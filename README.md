@@ -13,14 +13,18 @@ docker pull ghcr.io/karstensuhre/tensordocker:1.0
 To run the docker image (adapt the -v option to mount the required local directory):
 ```bash
 docker run -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
+```
 
+Rstudio is not automatically started in the image. To start the server:
+```bash
 docker exec -it tensor rstudio-server start
-
 ```
 
 To access the rstudio server:
 * http://localhost:8787 (rstudio interface, user: rstudio, password: pwd)
-* http://localhost:8888 (tensorflow jupyter interface, token required)
+
+To access the tensorflow jupyter notebook:
+* http://localhost:8888 (tensorflow jupyter interface, token required - see below)
 
 To obtain the jupyter login token:
 ```bash
@@ -51,14 +55,13 @@ To run the entire script without interactive prompting to create the image in on
 
 ## Working with the docker image
 
-### Implemented software
 
-To install [maplet](https://github.com/krumsieklab/maplet) from the latest commit:
+To update/install [maplet](https://github.com/krumsieklab/maplet) from the latest commit:
 ```R
 devtools::install_github(repo="krumsieklab/maplet", subdir="maplet")
 ```
 
-To install [autonomics](https://github.com/bhagwataditya/autonomics) from the latest commit:
+To update/install [autonomics](https://github.com/bhagwataditya/autonomics) from the latest commit:
 ```R
 remotes::install_github('bhagwataditya/autonomics', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
 ```
@@ -67,6 +70,8 @@ To test tensorflow:
 ```R
 tensorflow::tf_gpu_configured()
 ```
+
+You can run [mnist_example.R](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing keras/tensorflow.
 
 ## Using GPU support
 
@@ -85,5 +90,3 @@ To start the docker image with GPU support use the --gpus option:
 ```bash
 docker run --gpus all -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
 ```
-
-You can use the [MNIST example](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing.
