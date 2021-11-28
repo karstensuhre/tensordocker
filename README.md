@@ -83,7 +83,7 @@ Then run the following as root (once after boot):
 sudo nvidia-persistenced
 ```
 
-TO check if CUDO is working alright:
+TO check if CUDA is working alright:
 ```bash
 nvidia-smi
 ```
