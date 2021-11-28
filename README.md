@@ -55,6 +55,14 @@ To run the entire script without interactive prompting to create the image in on
 
 ## Working with the docker image
 
+Caution: When using *library(keras)* in R for the first time, **DO NOT** install a python library. It is already there. Answer **NO** to the install prompt! 
+
+To test tensorflow:
+```R
+tensorflow::tf_gpu_configured()
+```
+
+You can run [mnist_example.R](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing keras/tensorflow.
 
 To update/install [maplet](https://github.com/krumsieklab/maplet) from the latest commit:
 ```R
@@ -66,12 +74,6 @@ To update/install [autonomics](https://github.com/bhagwataditya/autonomics) from
 remotes::install_github('bhagwataditya/autonomics', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
 ```
 
-To test tensorflow:
-```R
-tensorflow::tf_gpu_configured()
-```
-
-You can run [mnist_example.R](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing keras/tensorflow.
 
 ## Using GPU support
 
