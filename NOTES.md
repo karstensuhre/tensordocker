@@ -12,3 +12,39 @@ apt-get install sshfs
 # run sshfs
 sshfs -o uid=1000 -o gid=100 user@remote.machine.org:/data /mount/point
 ```
+
+
+### How to compute a log-p value from R lm() summary stats
+
+```R
+# create a simulated data set
+N = 100
+x = runif(N)
+y = x + runif(N)
+plot(x,y)
+
+# compute a linear model
+s0 = summary(lm(y ~ x))
+print(s0)
+print(s0$coef)
+
+# get statistic and pvalue from the summary
+t = s0$coef["x","Estimate"] / s0$coef["x","Std. Error"]
+p = s0$coef["x","Pr(>|t|)"]
+
+# compute the pvalue using the pt() function, the following two values should be identical
+p
+2*pt(-abs(t),df=N-2, log=FALSE)
+
+# same for the log pvalue (this is the natural log)
+log(p)
+pt(-abs(t),df=N-2, log=TRUE) + log(2)
+
+
+# the same for log10 ( pvalue )
+log10(p)
+log10(exp(1)) * ( pt(-abs(t),df=N-2, log=TRUE) + log(2) )
+
+# thus: log10p = log10(exp(1)) * ( pt(-abs(beta/se),df=N-2, log=TRUE) + log(2) )
+# where beta is the estimate of the effect size from the linear model and se its standard error 
+```
