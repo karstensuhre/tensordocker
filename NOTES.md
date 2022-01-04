@@ -14,7 +14,9 @@ sshfs -o uid=1000 -o gid=100 user@remote.machine.org:/data /mount/point
 ```
 
 
-### How to compute a log-p value from R lm() summary stats
+### How to compute log-p values in R using lm() summary stats
+
+This works especially for p-values < 1E-320 which would otherwise be represented as zero. Try the below with N=10000 for an example!
 
 ```R
 # create a simulated data set
