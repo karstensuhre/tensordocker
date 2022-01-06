@@ -92,3 +92,5 @@ To start the docker image with GPU support use the --gpus option:
 ```bash
 docker run --gpus all -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
 ```
+
+Using rstudio you can then pull this github repository using the GIT functionality of R and then run [mnist_example.R](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing the performance of the GPU. FOr comparision, there is also a python version that performs the same actions [mnist_example.py](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.py). It can runs be executed inside rstudio.
