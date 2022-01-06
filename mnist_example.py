@@ -2,7 +2,7 @@
 #AUTHOR:  Karsten Suhre
 #DATE:    6 Jan 2021
 #PURPOSE: evaluate usage of python with tensorflow and keras to do AI
-#MODIF:   x
+#MODIF:   xx
 
 # run the mnist character recognition example in python
 # see https://hub.packtpub.com/distributed-tensorflow-multiple-gpu-server/
