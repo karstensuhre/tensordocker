@@ -3,11 +3,13 @@
 #DATE:    3 Jan 2019
 #PURPOSE: evaluate usage of R with tensorflow and keras to do AI
 #MODIF:   
-
 # inspired by https://tensorflow.rstudio.com
 
-rm(list=ls())
 library(keras)
+
+rm(list=ls())
+
+print ( tensorflow::tf_gpu_configured() )
 
 # test example from https://tensorflow.rstudio.com/keras/
 mnist <- dataset_mnist()
@@ -40,6 +42,10 @@ model %>%
   layer_dropout(rate = 0.2) %>%
   layer_dense(units = 10, activation = 'softmax')
 
+# model %>% 
+#   layer_dense(units = 512, activation = 'relu', input_shape = c(784)) %>% 
+#   layer_dense(units = 10, activation = 'softmax')
+
 # Next, compile the model with appropriate loss function, optimizer, and metrics:
 model %>% compile(
   loss = 'categorical_crossentropy',
@@ -52,10 +58,10 @@ print(summary(model))
 
 # Use the fit() function to train the model for N epochs using batches of batch_size images
 history <- model %>% fit(
-  x_train, y_train, 
-  epochs = 10, batch_size = 2048, 
+  epochs = 10, batch_size = 256, 
   #callbacks = callback_tensorboard("logs/run_a"),
-  validation_split = 0.2
+  validation_split = 0.2,
+  x_train, y_train
 )
 
 plot(history)
