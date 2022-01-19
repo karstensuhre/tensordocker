@@ -50,3 +50,13 @@ log10(exp(1)) * ( pt(-abs(t),df=N-2, log=TRUE) + log(2) )
 # thus: log10p = log10(exp(1)) * ( pt(-abs(beta/se),df=N-2, log=TRUE) + log(2) )
 # where beta is the estimate of the effect size from the linear model and se its standard error 
 ```
+
+
+
+### Title
+
+* list item 1
+* list item 2
+
+
+[a link](http://google.com)
