@@ -52,11 +52,3 @@ log10(exp(1)) * ( pt(-abs(t),df=N-2, log=TRUE) + log(2) )
 ```
 
 
-
-### Title
-
-* list item 1
-* list item 2
-
-
-[a link](http://google.com)
