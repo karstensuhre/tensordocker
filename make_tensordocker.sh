@@ -76,6 +76,14 @@
 #             need to add "--privileged -v /run/dbus/system_bus_socket:/run/dbus/system_bus_socket:ro" to the docker command
 #             (not done yet)
 #
+# Mon 27 Mar 2023 04:40:17 PM +03
+#           - creating updated version 2.0
+#           - tensorflow/tensorflow:2.4.1-gpu-jupyter ==> tensorflow/tensorflow:2.12.0-gpu-jupyter
+#           - rstudio-server-2021.09.0-351-amd64.deb ==> rstudio-server-2023.03.0-386-amd64.deb 
+#           - BiocManager::install(version = "3.16") ==> BiocManager::install(version = "3.16")
+#           - "krumsieklab/maplet@v1.1.0" ==> "krumsieklab/maplet@v1.2.1"
+#           - added a few more libs that prevented installation of devtools
+#
 #BUGS:    
 
 # if called with option "all", then all scripts are excuted 
@@ -92,10 +100,8 @@ if [ "$dummy" = "y" -o "$dummy" = "Y" ]  ; then
 # create the Dockerfile as a here document
 ####################################################################
 cat > tensordocker.dockerfile << 'EOF'
-FROM tensorflow/tensorflow:2.4.1-gpu-jupyter
-#FROM tensorflow/tensorflow:latest-gpu-jupyter
-#FROM tensorflow/tensorflow:latest-gpu
-LABEL tensordocker.version=1.0
+FROM tensorflow/tensorflow:2.12.0-gpu-jupyter
+LABEL tensordocker.version=2.0
 COPY tensordocker.installscript /
 RUN sh /tensordocker.installscript
 EXPOSE 8787
@@ -115,18 +121,32 @@ lsb_release -a
 
 export DEBIAN_FRONTEND=noninteractive
 
-# include repository to install the latest version of R
-# https://cloud.r-project.org/bin/linux/ubuntu/README.html
-apt-key adv --keyserver keyserver.ubuntu.com --recv-keys E298A3A825C0D65DFD57CBB651716619E084DAB9
-add-apt-repository 'deb https://cloud.r-project.org/bin/linux/ubuntu bionic-cran40/'
-
 # update the distro
+apt update -qq
 apt-get update -y
+apt-get install -y ssh wget 
 
-# install Linux utilities
-apt-get install -y ssh wget gdebi-core dialog apt-utils vim apt-transport-https software-properties-common libglpk-dev
+# following https://cloud.r-project.org/bin/linux/ubuntu/
+# include repository to install the latest version of R
+
+# install two helper packages we need
+sudo apt install --no-install-recommends software-properties-common dirmngr
+
+# add the signing key (by Michael Rutter) for these repos
+# To verify key, run gpg --show-keys /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc 
+# Fingerprint: E298A3A825C0D65DFD57CBB651716619E084DAB9
+wget -qO- https://cloud.r-project.org/bin/linux/ubuntu/marutter_pubkey.asc | tee -a /etc/apt/trusted.gpg.d/cran_ubuntu_key.asc
+
+# add the R 4.0 repo from CRAN -- adjust 'focal' to 'groovy' or 'bionic' as needed
+add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_release -cs)-cran40/"
+
+# install some Linux utilities that were missing at some point (not sure they still do)
+apt-get install -y gdebi-core dialog apt-utils vim apt-transport-https software-properties-common libglpk-dev
 apt-get install -y libcurl4-openssl-dev libxml2-dev libssl-dev 
 apt-get install -y libgit2-dev
+
+# 27 March 2023
+apt-get install -y libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
 
 # install R
 apt-get install -y r-base r-base-dev
@@ -139,8 +159,11 @@ apt-get install -y r-base r-base-dev
 # wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-1.4.1717-amd64.deb
 # gdebi rstudio-server-1.4.1717-amd64.deb
 # update 9 Nov 2021:
-wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2021.09.0-351-amd64.deb
-gdebi -n rstudio-server-2021.09.0-351-amd64.deb
+# wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2021.09.0-351-amd64.deb
+# update 27 March 2023
+wget https://download2.rstudio.org/server/bionic/amd64/rstudio-server-2023.03.0-386-amd64.deb 
+
+gdebi -n rstudio-server-2023.03.0-386-amd64.deb 
 
 # create a user 'rstudio' 
 adduser rstudio <<PWD
@@ -168,8 +191,9 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 # update 10 Sep 2021: 
 # BiocManager::install(version = "3.13")
 # update 8 Noc 2021
-BiocManager::install(version = "3.14")
-
+# BiocManager::install(version = "3.14")
+# update 27 March 2023
+BiocManager::install(version = "3.16")
 
 # install devtools and remotes (needed to install MetaboTools and autonomics
 BiocManager::install("devtools", update = FALSE)
@@ -229,7 +253,7 @@ if [ "$dummy" = "y" -o "$dummy" = "Y" ]  ; then
 
 cat > tensordocker.basis.dockerfile << 'EOF3'
 FROM tensordocker
-LABEL tensordocker.version=1.0basis
+LABEL tensordocker.version=2.0basis
 COPY tensordocker.basis.installscript /
 RUN sh /tensordocker.basis.installscript
 EXPOSE 8787
@@ -250,14 +274,19 @@ options(download.file.method='wget')
 # update to maplet on github https://github.com/krumsieklab/maplet
 # devtools::install_github(repo="krumsieklab/maplet@v1.0.1", subdir="maplet")
 # update 8 Nov 2021
-devtools::install_github(repo="krumsieklab/maplet@v1.1.0", subdir="maplet")
+# devtools::install_github(repo="krumsieklab/maplet@v1.1.0", subdir="maplet")
+# update 23 March 2023
+devtools::install_github(repo="krumsieklab/maplet@v1.2.1", subdir="maplet")
 
 # install autonomics from https://github.com/bhagwataditya/autonomics
 # update 10 Sep 2021
-remotes::install_github('bhagwataditya/autonomics', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
+# remotes::install_github('bhagwataditya/autonomics', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
+# update 23 March 2023
+BiocManager::install("autonomics")
 
 # install additional packages (if they are not already installed)
 pkgs=c(
+     "pacman",
      "GeneNet",
      "reshape2",
      "multtest",
@@ -302,11 +331,6 @@ FFF
 echo "done running $0"
 EOF4
 
-# UNCOMMENT THE BELOW TO RUN kldocker
-# add kldocker dockerfile
-# cat ../kldocker/Dockerfile_bioc | grep -v '^ *FROM' >> tensordocker.basis.dockerfile 
-# cp ../kldocker/packagelist.txt .
-
 echo '----- building docker image basis -----'
 docker build -t tensordocker.basis -f tensordocker.basis.dockerfile --no-cache . | tee tensordocker.basis.log
 echo "LOG of docker basis build is in tensordocker.basis.log"
@@ -347,11 +371,11 @@ cat << EEOOFF1
 
 # push the image to gitbub
 docker login ghcr.io
-docker tag tensordocker.basis ghcr.io/karstensuhre/tensordocker:1.0
-docker push ghcr.io/karstensuhre/tensordocker:1.0
+docker tag tensordocker.basis ghcr.io/karstensuhre/tensordocker:2.0
+docker push ghcr.io/karstensuhre/tensordocker:2.0
 
 # start the image
-docker run --gpus all -v \`pwd\`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
+docker run --gpus all -v \`pwd\`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
 
 # start the rstudio-server within the container
 docker exec -it tensor rstudio-server start
