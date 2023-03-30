@@ -1,5 +1,15 @@
 # Notes
 
+### Inverse normal scaling in R
+```
+invnorm = function(x) {
+  mrank = rank(x,na.last=TRUE)
+  mrank[which(is.na(x))] = NA
+  qnorm(mrank/max(mrank+1, na.rm=TRUE))
+}
+```
+
+
 ### Mounting a file system inside a docker image using sshfs
 
 ```bash
