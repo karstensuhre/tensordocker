@@ -2,11 +2,14 @@
 
 ### Switching version of wsl
 Here some info on WSL: https://learn.microsoft.com/en-us/windows/wsl/filesystems.
-You may consider using the depreciated version 1 of the file system when working with large/many files that reside on the Windows file system:
+You may consider using the  version 1 of the file system when working with large/many files that reside on the Windows file system. Run the following in a Windows powershell or command line:
 ```
 wsl --set-version Ubuntu 1
 ```
-
+This takes a few minutes to run and can be reverted by
+```
+wsl --set-version Ubuntu 2
+```
 
 
 ### Inverse normal scaling in R
