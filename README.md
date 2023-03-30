@@ -18,7 +18,7 @@ docker exec tensor rstudio-server start
 
 or using WSL
 ```bash
-docker.exe run -v C:\\Users:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
+docker.exe run -v "C:\\Users":/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
 docker.exe exec tensor rstudio-server start
 ```
 
