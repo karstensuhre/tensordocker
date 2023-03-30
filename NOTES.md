@@ -1,5 +1,14 @@
 # Notes
 
+### Switching version of wsl
+Here some info on WSL: https://learn.microsoft.com/en-us/windows/wsl/filesystems.
+You may consider using the depreciated version 1 of the file system when working with large/many files that reside on the Windows file system:
+```
+wsl --set-version Ubuntu 1
+```
+
+
+
 ### Inverse normal scaling in R
 ```
 invnorm = function(x) {
