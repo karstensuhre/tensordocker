@@ -7,18 +7,22 @@ This repository provides a docker installation of R, rstudio, BioConductor toget
 
 To install the image from the command line: 
 ```bash
-docker pull ghcr.io/karstensuhre/tensordocker:1.0
+docker pull ghcr.io/karstensuhre/tensordocker:2.0
 ```
 
 To run the docker image (adapt the -v option to mount the required local directory):
 ```bash
-docker run -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
+docker run -v /home:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
+docker exec tensor rstudio-server start
 ```
 
-Rstudio is not automatically started in the image. To start the server:
+or using WSL
 ```bash
-docker exec -it tensor rstudio-server start
+docker.exe run -v "C:\\Users":/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
+docker.exe exec tensor rstudio-server start
 ```
+
+Note that this command mounts the entire home directory (-v option). You may want to change this to a more limited scope.
 
 To access the rstudio server:
 * http://localhost:8787 (rstudio interface, user: rstudio, password: pwd)
@@ -69,11 +73,6 @@ To update/install [maplet](https://github.com/krumsieklab/maplet) from the lates
 devtools::install_github(repo="krumsieklab/maplet", subdir="maplet")
 ```
 
-To update/install [autonomics](https://github.com/bhagwataditya/autonomics) from the latest commit:
-```R
-remotes::install_github('bhagwataditya/autonomics', repos = BiocManager::repositories(), dependencies = TRUE, upgrade = FALSE)
-```
-
 
 ## Using GPU support
 
@@ -90,7 +89,7 @@ nvidia-smi
 
 To start the docker image with GPU support use the --gpus option:
 ```bash
-docker run --gpus all -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:1.0
+docker run --gpus all -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
 ```
 
 Using rstudio you can then pull this github repository using the GIT functionality of R and then run [mnist_example.R](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing the performance of the GPU. FOr comparision, there is also a python version that performs the same actions [mnist_example.py](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.py). It can runs be executed inside rstudio.
