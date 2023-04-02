@@ -80,9 +80,12 @@
 #           - creating updated version 2.0
 #           - tensorflow/tensorflow:2.4.1-gpu-jupyter ==> tensorflow/tensorflow:2.12.0-gpu-jupyter
 #           - rstudio-server-2021.09.0-351-amd64.deb ==> rstudio-server-2023.03.0-386-amd64.deb 
-#           - BiocManager::install(version = "3.16") ==> BiocManager::install(version = "3.16")
+#           - BiocManager::install(version = "3.14") ==> BiocManager::install(version = "3.16")
 #           - "krumsieklab/maplet@v1.1.0" ==> "krumsieklab/maplet@v1.2.1"
 #           - added a few more libs that prevented installation of devtools
+# Sun 02 Apr 2023 12:21:16 PM +03
+#           - add even more libs that prevented rJava and glmulti installation
+#           - add "FactoMineR", "factoextra"
 #
 #BUGS:    
 
@@ -143,7 +146,7 @@ add-apt-repository "deb https://cloud.r-project.org/bin/linux/ubuntu $(lsb_relea
 # install some Linux utilities that were missing at some point (not sure they still do)
 apt-get install -y gdebi-core dialog apt-utils vim apt-transport-https software-properties-common libglpk-dev
 apt-get install -y libcurl4-openssl-dev libxml2-dev libssl-dev 
-apt-get install -y libgit2-dev
+apt-get install -y libgit2-dev 
 
 # 27 March 2023
 apt-get install -y libfontconfig1-dev libharfbuzz-dev libfribidi-dev libfreetype6-dev libpng-dev libtiff5-dev libjpeg-dev
@@ -264,8 +267,11 @@ cat > tensordocker.basis.installscript << 'EOF4'
 set -x
 echo "running $0"
 
-apt-get install -y fortune
+# install some missing ubuntu libs, used by 
+apt-get install -y fortune cmake
+apt-get install default-jdk
 
+# install more R packages
 R --no-save << 'FFF'
 
 # install MetaboTools
@@ -292,7 +298,6 @@ pkgs=c(
      "multtest",
      "hash",
      "igraph",
-     "d3heatmap",
      "DT",
      "plotly",
      "pROC",
@@ -311,7 +316,9 @@ pkgs=c(
      "kableExtra",
      "ggpubr",
      "Rtsne",
-     "uwot"
+     "uwot",
+     "FactoMineR",
+     "factoextra"
 )
 
 print(pkgs)
@@ -327,6 +334,10 @@ if (length(pkgs) > 0) {
 } 
 
 FFF
+
+# start rstudio-server
+rstudio-server start
+sleep 10
 
 echo "done running $0"
 EOF4
@@ -372,6 +383,7 @@ cat << EEOOFF1
 # push the image to gitbub
 docker login ghcr.io
 docker tag tensordocker.basis ghcr.io/karstensuhre/tensordocker:2.0
+docker tag tensordocker.basis ghcr.io/karstensuhre/tensordocker:latest
 docker push ghcr.io/karstensuhre/tensordocker:2.0
 
 # start the image
