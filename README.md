@@ -7,18 +7,18 @@ This repository provides a docker installation of R, rstudio, BioConductor toget
 
 To install the image from the command line: 
 ```bash
-docker pull ghcr.io/karstensuhre/tensordocker:2.0
+docker pull ghcr.io/karstensuhre/tensordocker:latest
 ```
 
 To run the docker image (adapt the -v option to mount the required local directory):
 ```bash
-docker run -v /home:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
+docker run -v /home:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:latest
 docker exec tensor rstudio-server start
 ```
 
 or using WSL
 ```bash
-docker.exe run -v "C:\\Users":/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
+docker.exe run -v "C:\\Users":/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:latest
 docker.exe exec tensor rstudio-server start
 ```
 
@@ -89,7 +89,7 @@ nvidia-smi
 
 To start the docker image with GPU support use the --gpus option:
 ```bash
-docker run --gpus all -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:2.0
+docker run --gpus all -v `pwd`:/home/rstudio/host -it --detach --name tensor -p8888:8888 -p8787:8787 ghcr.io/karstensuhre/tensordocker:latest
 ```
 
 Using rstudio you can then pull this github repository using the GIT functionality of R and then run [mnist_example.R](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.R) for testing the performance of the GPU. FOr comparision, there is also a python version that performs the same actions [mnist_example.py](https://github.com/karstensuhre/tensordocker/blob/main/mnist_example.py). It can runs be executed inside rstudio.
